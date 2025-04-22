@@ -5,7 +5,7 @@ import zeco.suza.eoreporterv1.model.Users;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<Users, Integer> {
+public interface UserRepository extends JpaRepository<Users, Long> {
 
 
     Optional<Users> findByEmail(String email);
