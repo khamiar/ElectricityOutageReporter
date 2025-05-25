@@ -27,10 +27,16 @@ public class Users implements UserDetails {
     private String phoneNumber;
     private String address;
     private String password;
+//    private Boolean enabled = true;
 //    private Boolean isVerified = false;
 //    private String otpCode;
+    @Column(nullable = false)
+    private Boolean enabled = true;
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @Column(nullable = false)
+    private Boolean deleted = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -59,6 +65,6 @@ public class Users implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled != null ? enabled : true;
     }
 }
