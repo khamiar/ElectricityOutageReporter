@@ -33,6 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final  String jwt;
         final  String userEmail;
         if (authHeader == null ||!authHeader.startsWith ("Bearer ")){
+            logger.debug("No valid JWT token found");
             filterChain.doFilter(request, response);
             return;
         }

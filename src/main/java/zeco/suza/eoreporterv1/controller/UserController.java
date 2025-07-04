@@ -2,6 +2,7 @@ package zeco.suza.eoreporterv1.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import zeco.suza.eoreporterv1.model.Users;
 import zeco.suza.eoreporterv1.service.UserService;
@@ -25,6 +26,11 @@ public class UserController {
         return usersService.getUserById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<Users> getCurrentUser(@AuthenticationPrincipal Users user) {
+        return ResponseEntity.ok(user);
     }
 
     @PutMapping("/{id}")

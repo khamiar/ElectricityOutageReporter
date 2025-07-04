@@ -1,6 +1,8 @@
 // --- CONTROLLER ---
 package zeco.suza.eoreporterv1.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/outages")
@@ -24,9 +27,30 @@ public class OutageReportController {
 
     @PostMapping
     public ResponseEntity<OutageReport> createReport(
-            @RequestPart("report") OutageReport report,
+            @RequestPart("report") String reportJson,
             @RequestPart(value = "media", required = false) MultipartFile media,
             @AuthenticationPrincipal Users reporter) throws Exception {
+        // Parse the JSON string to OutageReport object
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        
+        System.out.println("DEBUG: Original JSON: " + reportJson);
+        
+        // First parse as Map to handle field mapping
+        Map<String, Object> jsonMap = objectMapper.readValue(reportJson, Map.class);
+        
+        // Handle field mapping: reportDate -> reportedAt
+        if (jsonMap.containsKey("reportDate") && !jsonMap.containsKey("reportedAt")) {
+            System.out.println("DEBUG: Found reportDate, mapping to reportedAt");
+            jsonMap.put("reportedAt", jsonMap.remove("reportDate"));
+        }
+        
+        // Convert back to JSON and then to OutageReport object
+        String correctedJson = objectMapper.writeValueAsString(jsonMap);
+        System.out.println("DEBUG: Corrected JSON: " + correctedJson);
+        
+        OutageReport report = objectMapper.readValue(correctedJson, OutageReport.class);
+        
         return ResponseEntity.ok(service.createReport(report, media, reporter));
     }
 

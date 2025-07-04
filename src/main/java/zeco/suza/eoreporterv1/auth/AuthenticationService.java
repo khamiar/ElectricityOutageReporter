@@ -41,6 +41,12 @@ public class AuthenticationService {
         logger.info("User registered successfully: {}", registerRequest.getEmail());
         return AuthenticationResponse.builder()
                 .token(jwtToken)
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .role(user.getRole())
+                .id(user.getId())
                 .build();
     }
 
@@ -59,6 +65,12 @@ public class AuthenticationService {
             logger.info("User authenticated successfully: {}", authenticationRequest.getEmail());
             return AuthenticationResponse.builder()
                     .token(jwtToken)
+                    .email(user.getEmail())
+                    .fullName(user.getFullName())
+                    .phoneNumber(user.getPhoneNumber())
+                    .address(user.getAddress())
+                    .role(user.getRole())
+                    .id(user.getId())
                     .build();
         } catch (BadCredentialsException e) {
             logger.error("Authentication failed for user: {}", authenticationRequest.getEmail(), e);
