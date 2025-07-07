@@ -2,6 +2,7 @@
 package zeco.suza.eoreporterv1.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import zeco.suza.eoreporterv1.exception.ResourceNotFoundException;
@@ -45,6 +46,7 @@ import java.time.format.DateTimeFormatter;
 public class OutageReportService {
     private final OutageReportRepository reportRepository;
     private final GeoLocationService geoLocationService;
+    private final SimpMessagingTemplate messagingTemplate;
     private final Path rootLocation = Paths.get("upload-dir");
 
     public OutageReport createReport(OutageReport report, MultipartFile media, Users reporter) throws IOException {
@@ -65,7 +67,12 @@ public class OutageReportService {
             report.setMediaUrl("/uploads/" + filename);
         }
 
-        return reportRepository.save(report);
+        OutageReport savedReport = reportRepository.save(report);
+        
+        // Send WebSocket message for new outage
+        messagingTemplate.convertAndSend("/topic/outages", savedReport);
+        
+        return savedReport;
     }
 
     public List<OutageReport> getUserReports(Users reporter) {
@@ -80,7 +87,13 @@ public class OutageReportService {
         if (status == OutageStatus.RESOLVED) {
             report.setResolvedAt(LocalDateTime.now());
         }
-        return reportRepository.save(report);
+        
+        OutageReport updatedReport = reportRepository.save(report);
+        
+        // Send WebSocket message for status update
+        messagingTemplate.convertAndSend("/topic/outage-status", updatedReport);
+        
+        return updatedReport;
     }
 
     public Map<String, Long> getStatusSummary() {
@@ -112,6 +125,9 @@ public class OutageReportService {
         }
         
         reportRepository.delete(report);
+        
+        // Send WebSocket message for outage deletion
+        messagingTemplate.convertAndSend("/topic/outage-deleted", report.getId());
     }
 
     public byte[] generateReport(String fromDate, String toDate, String format) {

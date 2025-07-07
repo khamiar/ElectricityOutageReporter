@@ -1,7 +1,9 @@
 package zeco.suza.eoreporterv1.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import zeco.suza.eoreporterv1.dto.FeedbackDTO;
 import zeco.suza.eoreporterv1.exception.ResourceNotFoundException;
 import zeco.suza.eoreporterv1.model.Feedback;
 import zeco.suza.eoreporterv1.model.Users;
@@ -17,8 +19,14 @@ public class FeedbackService {
     @Autowired
     private FeedbackRepository feedbackRepository;
     
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+    
     public Feedback createFeedback(Feedback feedback) {
-        return feedbackRepository.save(feedback);
+        Feedback saved = feedbackRepository.save(feedback);
+        // Send DTO to WebSocket to ensure proper serialization
+        messagingTemplate.convertAndSend("/topic/feedback", FeedbackDTO.fromEntity(saved));
+        return saved;
     }
     
     public List<Feedback> getAllFeedback() {

@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import zeco.suza.eoreporterv1.dto.FeedbackDTO;
 import zeco.suza.eoreporterv1.model.Feedback;
 import zeco.suza.eoreporterv1.model.Users;
 import zeco.suza.eoreporterv1.service.FeedbackService;
@@ -13,6 +14,7 @@ import zeco.suza.eoreporterv1.service.FeedbackService;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/feedback")
@@ -64,23 +66,27 @@ public class FeedbackController {
     }
     
     @GetMapping("/my")
-    public ResponseEntity<List<Feedback>> getMyFeedback(@AuthenticationPrincipal Users currentUser) {
+    public ResponseEntity<List<FeedbackDTO>> getMyFeedback(@AuthenticationPrincipal Users currentUser) {
         try {
             List<Feedback> feedbackList = feedbackService.getFeedbackByUser(currentUser);
-            return ResponseEntity.ok(feedbackList);
+            List<FeedbackDTO> feedbackDTOs = feedbackList.stream()
+                    .map(FeedbackDTO::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(feedbackDTOs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<Feedback> getFeedbackById(
+    public ResponseEntity<FeedbackDTO> getFeedbackById(
             @PathVariable Long id,
             @AuthenticationPrincipal Users currentUser) {
         try {
             return feedbackService.getFeedbackById(id)
                     .filter(feedback -> feedback.getUser().getId().equals(currentUser.getId()) || 
                             currentUser.getRole().toString().equals("ADMIN"))
+                    .map(FeedbackDTO::fromEntity)
                     .map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
@@ -91,10 +97,13 @@ public class FeedbackController {
     // Admin endpoints
     @GetMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Feedback>> getAllFeedback() {
+    public ResponseEntity<List<FeedbackDTO>> getAllFeedback() {
         try {
             List<Feedback> feedbackList = feedbackService.getAllFeedback();
-            return ResponseEntity.ok(feedbackList);
+            List<FeedbackDTO> feedbackDTOs = feedbackList.stream()
+                    .map(FeedbackDTO::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(feedbackDTOs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -102,10 +111,13 @@ public class FeedbackController {
     
     @GetMapping("/status/{status}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Feedback>> getFeedbackByStatus(@PathVariable String status) {
+    public ResponseEntity<List<FeedbackDTO>> getFeedbackByStatus(@PathVariable String status) {
         try {
             List<Feedback> feedbackList = feedbackService.getFeedbackByStatus(status.toUpperCase());
-            return ResponseEntity.ok(feedbackList);
+            List<FeedbackDTO> feedbackDTOs = feedbackList.stream()
+                    .map(FeedbackDTO::fromEntity)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(feedbackDTOs);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -113,7 +125,7 @@ public class FeedbackController {
     
     @PutMapping("/{id}/respond")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Feedback> respondToFeedback(
+    public ResponseEntity<FeedbackDTO> respondToFeedback(
             @PathVariable Long id,
             @RequestBody Map<String, String> responseData,
             @AuthenticationPrincipal Users currentUser) {
@@ -128,7 +140,7 @@ public class FeedbackController {
             Feedback updatedFeedback = feedbackService.updateFeedbackStatus(
                     id, status.toUpperCase(), response, currentUser);
             
-            return ResponseEntity.ok(updatedFeedback);
+            return ResponseEntity.ok(FeedbackDTO.fromEntity(updatedFeedback));
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
