@@ -3,6 +3,7 @@ package zeco.suza.eoreporterv1.service;
 import zeco.suza.eoreporterv1.model.Announcement;
 import zeco.suza.eoreporterv1.model.Users;
 import zeco.suza.eoreporterv1.repository.AnnouncementRepository;
+import zeco.suza.eoreporterv1.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import zeco.suza.eoreporterv1.exception.ResourceNotFoundException;
@@ -16,6 +17,12 @@ public class AnnouncementService {
     @Autowired
     private AnnouncementRepository repository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
     public List<Announcement> getAll() {
         return repository.findAll();
     }
@@ -25,10 +32,24 @@ public class AnnouncementService {
     }
 
     public Announcement create(Announcement announcement) {
-        if (announcement.getPostedBy() == null) {
-            throw new IllegalArgumentException("Announcement must have a poster");
+        Announcement saved = repository.save(announcement);
+
+        // NEW: Send notification to all users if sendNotification is true
+        if (Boolean.TRUE.equals(saved.getSendNotification())) {
+            List<Users> users = userRepository.findAll();
+            for (Users user : users) {
+                if (!user.getId().equals(saved.getPostedBy().getId())) { // skip admin
+                    notificationService.createNotification(
+                        user,
+                        "New Announcement",
+                        saved.getTitle(),
+                        null
+                    );
+                }
+            }
         }
-        return repository.save(announcement);
+
+        return saved;
     }
 
     public Announcement update(Long id, Announcement announcement) {

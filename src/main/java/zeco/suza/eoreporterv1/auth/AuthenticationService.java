@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.Random;
 import zeco.suza.eoreporterv1.service.EmailService;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Map;
+import zeco.suza.eoreporterv1.dto.MessageResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -119,33 +121,34 @@ public class AuthenticationService {
         try {
             emailService.sendOtpEmail(request.getEmail(), otp);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.status(500).body("Failed to send OTP email.");
         }
 
-        return ResponseEntity.ok("OTP sent to email");
+        return ResponseEntity.ok(new MessageResponse("OTP sent to email"));
     }
 
     public ResponseEntity<?> verifyOtp(OtpVerifyRequest request) {
         Optional<OtpToken> otpOpt = otpTokenRepository.findByEmailAndOtp(request.getEmail(), request.getOtp());
         if (otpOpt.isEmpty() || Instant.now().isAfter(otpOpt.get().getExpiresAt())) {
-            return ResponseEntity.badRequest().body("Invalid or expired OTP");
+            return ResponseEntity.badRequest().body(new MessageResponse("Invalid or expired OTP"));
         }
-        return ResponseEntity.ok("OTP verified");
+        return ResponseEntity.ok(new MessageResponse("OTP verified"));
     }
 
     public ResponseEntity<?> resetPassword(PasswordChangeRequest request) {
         Optional<OtpToken> otpOpt = otpTokenRepository.findByEmailAndOtp(request.getEmail(), request.getOtp());
         if (otpOpt.isEmpty() || Instant.now().isAfter(otpOpt.get().getExpiresAt())) {
-            return ResponseEntity.badRequest().body("Invalid or expired OTP");
+            return ResponseEntity.badRequest().body(new MessageResponse("Invalid or expired OTP"));
         }
         Optional<Users> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
+            return ResponseEntity.badRequest().body(new MessageResponse("User not found"));
         }
         Users user = userOpt.get();
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
         otpTokenRepository.deleteByEmail(request.getEmail());
-        return ResponseEntity.ok("Password reset successful");
+        return ResponseEntity.ok(new MessageResponse("Password reset successful"));
     }
 }

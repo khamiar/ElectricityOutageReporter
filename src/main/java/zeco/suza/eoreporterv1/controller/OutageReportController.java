@@ -66,12 +66,16 @@ public class OutageReportController {
 
     @GetMapping("/summary")
     public ResponseEntity<Map<String, Long>> getSummary() {
+
         return ResponseEntity.ok(service.getStatusSummary());
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<OutageReport>> getMyReports(@AuthenticationPrincipal Users user) {
-        return ResponseEntity.ok(service.getUserReports(user));
+        System.out.println("Current user: " + user);
+        List<OutageReport> reports = service.getUserReports(user);
+        System.out.println("Reports for user: " + reports);
+        return ResponseEntity.ok(reports);
     }
 
     @GetMapping

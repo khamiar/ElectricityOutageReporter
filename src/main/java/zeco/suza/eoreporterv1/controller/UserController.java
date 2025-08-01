@@ -9,6 +9,8 @@ import zeco.suza.eoreporterv1.service.UserService;
 
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/users")
@@ -42,5 +44,11 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
         usersService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/profile-image")
+    public ResponseEntity<?> uploadProfileImage(@RequestParam("file") MultipartFile file, Principal principal) {
+        // Save file, update user's profileImageUrl, return new URL
+        return ResponseEntity.ok().build(); // Placeholder for actual implementation
     }
 }

@@ -33,9 +33,10 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws/**", "/ws").permitAll() // <-- Allow WebSocket handshake
+                        .requestMatchers("/ws/**", "/ws").permitAll() // Allow WebSocket handshake
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/admin/**").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/announcements/**").authenticated()
                         .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated()
@@ -45,7 +46,9 @@ public class SecurityConfiguration {
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .headers(headers -> headers.frameOptions().disable());
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions.disable())
+                );
 
         return http.build();
     }
