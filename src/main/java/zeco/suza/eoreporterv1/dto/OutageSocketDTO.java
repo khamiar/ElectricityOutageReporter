@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class OutageSocketDTO {
     private Long id;
     private String title;
+    private String region;
     private Double latitude;
     private Double longitude;
     private String locationName;

@@ -50,14 +50,13 @@ public class AnnouncementController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Announcement> update(
-            @PathVariable Long id, 
-            @RequestBody Announcement announcement,
-            @AuthenticationPrincipal Users currentUser) {
-        announcement.setPostedBy(currentUser);
-        return ResponseEntity.ok(service.update(id, announcement));
-    }
+@PreAuthorize("hasRole('ADMIN')")
+public ResponseEntity<Announcement> update(
+        @PathVariable Long id, 
+        @RequestBody Announcement announcement,
+        @AuthenticationPrincipal Users currentUser) {
+    return ResponseEntity.ok(service.update(id, announcement));
+}
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

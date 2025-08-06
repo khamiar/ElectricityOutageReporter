@@ -6,9 +6,12 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import zeco.suza.eoreporterv1.model.*;
+import zeco.suza.eoreporterv1.repository.UserRepository;
 import zeco.suza.eoreporterv1.service.OutageReportService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,6 +25,7 @@ import java.util.HashMap;
 @RequiredArgsConstructor
 public class OutageReportController {
     private final OutageReportService service;
+    private final UserRepository usersRepository;
 
 
 
@@ -71,12 +75,24 @@ public class OutageReportController {
     }
 
     @GetMapping("/my")
-    public ResponseEntity<List<OutageReport>> getMyReports(@AuthenticationPrincipal Users user) {
-        System.out.println("Current user: " + user);
-        List<OutageReport> reports = service.getUserReports(user);
-        System.out.println("Reports for user: " + reports);
-        return ResponseEntity.ok(reports);
+    public ResponseEntity<List<OutageReport>> getMyReports() {
+        try {
+            Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (principal instanceof UserDetails userDetails) {
+                String email = userDetails.getUsername();
+                Users user = usersRepository.findByEmail(email)
+                        .orElseThrow(() -> new RuntimeException("User not found"));
+                List<OutageReport> reports = service.getUserReports(user);
+                return ResponseEntity.ok(reports);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+        } catch (Exception e) {
+            System.err.println("Error in getMyReports: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     @GetMapping
     public ResponseEntity<List<OutageReport>> getAllReports() {

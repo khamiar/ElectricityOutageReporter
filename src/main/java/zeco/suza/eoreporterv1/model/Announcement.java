@@ -1,6 +1,7 @@
 package zeco.suza.eoreporterv1.model;
 
 import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,7 +19,9 @@ public class Announcement {
     private Long id;
 
     private String title;
+
     private String content;
+
     private String category;
     private String attachmentUrl;
     private LocalDateTime publishDate;

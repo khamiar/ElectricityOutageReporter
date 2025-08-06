@@ -25,6 +25,7 @@ public class OutageReport {
 
     private String title;
     private String description;
+    private String region;
     private String manualLocation;
     private Double latitude;
     private Double longitude;

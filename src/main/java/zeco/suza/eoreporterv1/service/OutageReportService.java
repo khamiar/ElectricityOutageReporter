@@ -148,6 +148,7 @@ public class OutageReportService {
         return new OutageSocketDTO(
                 report.getId(),
                 report.getTitle(),
+                report.getRegion(),
                 report.getLatitude(),
                 report.getLongitude(),
                 report.getLocationName(),
@@ -196,6 +197,7 @@ public class OutageReportService {
 
             for (OutageReport r : reports) {
                 table.addCell(r.getTitle());
+                table.addCell(r.getRegion());
                 table.addCell(r.getLocationName());
                 table.addCell(r.getStatus().toString());
                 table.addCell(r.getReportedAt().toString());
@@ -222,7 +224,7 @@ public class OutageReportService {
             font.setBold(true);
             style.setFont(font);
 
-            String[] headers = {"Title", "Location", "Status", "Reported At", "Resolved At"};
+            String[] headers = {"Title", "region", "Location", "Status", "Reported At", "Resolved At"};
             for (int i = 0; i < headers.length; i++) {
                 Cell cell = headerRow.createCell(i);
                 cell.setCellValue(headers[i]);
@@ -233,10 +235,11 @@ public class OutageReportService {
             for (OutageReport r : reports) {
                 Row row = sheet.createRow(rowNum++);
                 row.createCell(0).setCellValue(r.getTitle());
-                row.createCell(1).setCellValue(r.getLocationName());
-                row.createCell(2).setCellValue(r.getStatus().toString());
-                row.createCell(3).setCellValue(r.getReportedAt().toString());
-                row.createCell(4).setCellValue(r.getResolvedAt() != null ? r.getResolvedAt().toString() : "N/A");
+                row.createCell(1).setCellValue(r.getRegion());
+                row.createCell(2).setCellValue(r.getLocationName());
+                row.createCell(3).setCellValue(r.getStatus().toString());
+                row.createCell(4).setCellValue(r.getReportedAt().toString());
+                row.createCell(5).setCellValue(r.getResolvedAt() != null ? r.getResolvedAt().toString() : "N/A");
             }
 
             for (int i = 0; i < headers.length; i++) sheet.autoSizeColumn(i);

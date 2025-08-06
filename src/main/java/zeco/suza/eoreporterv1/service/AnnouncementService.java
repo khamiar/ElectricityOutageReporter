@@ -11,6 +11,8 @@ import zeco.suza.eoreporterv1.exception.ResourceNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 public class AnnouncementService {
@@ -25,6 +27,10 @@ public class AnnouncementService {
 
     public List<Announcement> getAll() {
         return repository.findAll();
+    }
+    
+    public Page<Announcement> getAllPaginated(Pageable pageable) {
+        return repository.findAll(pageable);
     }
 
     public Optional<Announcement> getById(Long id) {
@@ -52,21 +58,28 @@ public class AnnouncementService {
         return saved;
     }
 
-    public Announcement update(Long id, Announcement announcement) {
-        return repository.findById(id)
-            .map(existing -> {
-                existing.setTitle(announcement.getTitle());
-                existing.setContent(announcement.getContent());
-                existing.setCategory(announcement.getCategory());
-                existing.setAttachmentUrl(announcement.getAttachmentUrl());
-                existing.setPublishDate(announcement.getPublishDate());
-                existing.setSendNotification(announcement.getSendNotification());
-                existing.setStatus(announcement.getStatus());
-                existing.setPostedBy(announcement.getPostedBy());
-                return repository.save(existing);
-            })
-            .orElseThrow(() -> new ResourceNotFoundException("Announcement not found with id: " + id));
-    }
+
+public Announcement update(Long id, Announcement announcement) {
+    return repository.findById(id)
+        .map(existing -> {
+            // Validate that only the original poster or admin can update
+            if (announcement.getPostedBy() != null && 
+                !announcement.getPostedBy().getId().equals(existing.getPostedBy().getId())) {
+                throw new SecurityException("Cannot change announcement ownership");
+            }
+            
+            existing.setTitle(announcement.getTitle());
+            existing.setContent(announcement.getContent());
+            existing.setCategory(announcement.getCategory());
+            existing.setAttachmentUrl(announcement.getAttachmentUrl());
+            existing.setPublishDate(announcement.getPublishDate());
+            existing.setSendNotification(announcement.getSendNotification());
+            existing.setStatus(announcement.getStatus());
+            // Don't update postedBy - keep original poster
+            return repository.save(existing);
+        })
+        .orElseThrow(() -> new ResourceNotFoundException("Announcement not found with id: " + id));
+}
 
     public void delete(Long id) {
         if (!repository.existsById(id)) {
