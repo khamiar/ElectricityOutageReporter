@@ -2,10 +2,8 @@ package zeco.suza.eoreporterv1.model;
 
 import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -14,21 +12,44 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Announcement {
+    // Getters and setters
+    @Setter
+    @Getter
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Setter
+    @Getter
     private String title;
 
+    @Setter
+    @Getter
     private String content;
 
+    @Getter
+    @Setter
     private String category;
+    @Getter
+    @Setter
     private String attachmentUrl;
+    @Setter
+    @Getter
     private LocalDateTime publishDate;
+    @Setter
+    @Getter
     private Boolean sendNotification;
+    @Setter
+    @Getter
     private String status;
+    @Getter
     private LocalDateTime createdAt;
+    @Getter
     private LocalDateTime updatedAt;
+    
+    @Setter
+    @Getter
+    private LocalDateTime postedAt;
 
     @ManyToOne
     @JoinColumn(name = "posted_by")
@@ -38,6 +59,7 @@ public class Announcement {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
+        postedAt = LocalDateTime.now();
         if (status == null) {
             status = "DRAFT";
         }
@@ -45,28 +67,8 @@ public class Announcement {
 
     @PreUpdate
     protected void onUpdate() {
+
         updatedAt = LocalDateTime.now();
     }
 
-    // Getters and setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
-    public String getCategory() { return category; }
-    public void setCategory(String category) { this.category = category; }
-    public String getAttachmentUrl() { return attachmentUrl; }
-    public void setAttachmentUrl(String attachmentUrl) { this.attachmentUrl = attachmentUrl; }
-    public LocalDateTime getPublishDate() { return publishDate; }
-    public void setPublishDate(LocalDateTime publishDate) { this.publishDate = publishDate; }
-    public Boolean getSendNotification() { return sendNotification; }
-    public void setSendNotification(Boolean sendNotification) { this.sendNotification = sendNotification; }
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
-} 
+}
